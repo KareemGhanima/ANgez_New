@@ -125,52 +125,74 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
       </header>
 
       {/* ===== MAIN 3-COLUMN LAYOUT ===== */}
-      <main className="p-4 md:p-6 max-w-[1600px] mx-auto mt-2 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <main className="p-4 md:p-6 max-w-[1700px] mx-auto mt-2 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* COLUMN 1: THE HERO'S JOURNEY (AVATAR & RADAR) */}
-        <div className="lg:col-span-4 space-y-6">
-           <div className="glass-panel p-5 relative overflow-hidden group">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-4 border-b border-cardBorder pb-2">
-                 <Shield size={16} className="text-neon-cyan" /> {t("dashboard.heros_journey", "THE HERO'S JOURNEY")}
-              </h2>
+        <div className="lg:col-span-6 space-y-6 h-full flex flex-col">
+           <div className="glass-panel p-5 relative overflow-hidden group flex-1 flex flex-col">
+              <div className="flex items-center justify-between border-b border-cardBorder pb-2 mb-4">
+                 <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                    <Shield size={16} className="text-neon-cyan" /> {t("dashboard.heros_journey", "THE HERO'S JOURNEY")}
+                 </h2>
+                 <span className="text-sm font-bold text-[#e2e8f0]">بطل الرحلة</span>
+              </div>
               
-              <div className="flex flex-col items-center mb-6">
-                 <div className="text-[10px] text-neon-cyan tracking-widest uppercase mb-4 text-center">
-                    {t("dashboard.personalized_avatar", "Personalized 2D Avatar")}<br/>({profile.path?.split(":")[1] || t("dashboard.wanderer", "Unassigned")})
-                 </div>
-                 <div className="relative w-48 h-48 rounded-full border-4 border-neon-cyan/30 flex items-center justify-center bg-brand-dark shadow-[0_0_30px_rgba(0,255,255,0.15)] mb-4">
-                    <AvatarSystem styles={profile.avatar_styles || { skin: "pale", eyes: "cyber", outfit: "default" }} size={160} className="absolute -bottom-4 drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]" />
-                 </div>
-                 
-                 {/* MANA BAR (XP) */}
-                 <div className="w-full px-4 mb-2">
-                    <div className="mana-bar-track w-full h-3">
-                       <div className="mana-bar-fill" style={{ width: `${xpPercent}%` }} />
-                    </div>
-                    <div className="flex justify-between mt-1 px-1">
-                       <span className="text-[10px] text-neon-cyan">{t("dashboard.xp", "XP")}: {profile.xp.toLocaleString()} / {(currentLevel * 1000).toLocaleString()}</span>
-                    </div>
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {/* AVATAR HALF */}
+                 <div className="flex flex-col items-center justify-center border-r border-cardBorder/50 pr-4">
+                     <div className="text-[10px] text-neon-cyan tracking-widest uppercase mb-4 text-center">
+                        {t("dashboard.personalized_avatar", "Personalized 2D Avatar")}<br/>({profile.path?.split(":")[1] || t("dashboard.wanderer", "Unassigned")})
+                     </div>
+                     <div className="relative w-48 h-48 rounded-full border-4 border-neon-cyan/30 flex items-center justify-center bg-brand-dark shadow-[0_0_30px_rgba(0,255,255,0.15)] mb-4">
+                        <AvatarSystem styles={profile.avatar_styles || { skin: "pale", eyes: "cyber", outfit: "default" }} size={160} className="absolute -bottom-4 drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]" />
+                     </div>
+                     {/* MANA BAR (XP) */}
+                     <div className="w-full px-2 mb-2">
+                        <div className="mana-bar-track w-full h-3">
+                           <div className="mana-bar-fill" style={{ width: `${xpPercent}%` }} />
+                        </div>
+                        <div className="flex justify-between mt-1 px-1">
+                           <span className="text-[10px] font-bold text-neon-cyan">{t("dashboard.xp", "XP")}: {profile.xp.toLocaleString()} / {(currentLevel * 1000).toLocaleString()}</span>
+                        </div>
+                     </div>
+                     <div className="w-full text-center py-2 bg-gradient-to-r from-transparent via-cyan-900/40 to-transparent border-y border-neon-cyan/30 mt-2 text-neon-cyan font-bold tracking-widest text-xs uppercase">
+                        {t("dashboard.level", "Level")} {currentLevel} &bull; {profile.path?.split(":")[0] || t("dashboard.wanderer", "Wanderer")}
+                     </div>
                  </div>
 
-                 <div className="w-full text-center py-2 bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent border-y border-neon-cyan/30 mt-2 text-neon-cyan font-bold tracking-widest text-xs uppercase">
-                    {t("dashboard.level", "Level")} {currentLevel} &bull; {profile.path?.split(":")[0] || t("dashboard.wanderer", "Wanderer")}
+                 {/* RADAR HALF */}
+                 <div className="flex flex-col items-center h-full min-h-[300px] relative mt-4 md:mt-0">
+                    <h2 className="text-sm font-bold text-[#e2e8f0] uppercase tracking-widest flex flex-col items-center justify-center gap-1 mb-2 text-center absolute top-0 left-1/2 -translate-x-1/2 z-10 w-full">
+                       <span>{t("dashboard.radar_chart", "ATTRIBUTE RADAR CHART")}</span>
+                    </h2>
+                    <GoldLock>
+                       <div className="h-full w-full min-h-[250px] mt-8">
+                          <RechartsRadarChart stats={profile.stats || { academic: 0, fitness: 0, discipline: 0, social: 0 }} />
+                       </div>
+                    </GoldLock>
                  </div>
               </div>
 
-              {/* RADAR CHART */}
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-2 text-center">
-                 <BarChart3 size={16} className="text-neon-green" /> {t("dashboard.radar_chart", "ATTRIBUTE RADAR CHART")}
-              </h2>
-              <GoldLock>
-                 <div className="h-64 w-full">
-                    <RechartsRadarChart stats={profile.stats || { academic: 0, fitness: 0, discipline: 0, social: 0 }} />
+              {/* STORE BUTTON BOTTOM BAR */}
+              <div className="mt-4 pt-4 border-t border-cardBorder flex items-center justify-between gap-4">
+                 <button onClick={() => window.location.href = "/armory"} className="px-8 py-3 bg-brand-dark border border-neon-cyan text-neon-cyan font-black tracking-widest text-sm uppercase rounded shadow-[0_0_15px_rgba(0,255,255,0.2)] hover:bg-neon-cyan hover:text-black transition-all">
+                    STORE
+                 </button>
+                 <div className="flex items-center gap-3">
+                    <div className="text-right">
+                       <div className="text-xs font-bold tracking-widest">AVATAR OUTFITS</div>
+                       <div className="text-[10px] text-slate-400">سكنات الشخصية 🔒</div>
+                    </div>
+                    <div className="w-12 h-12 bg-slate-800 rounded border border-cardBorder flex items-center justify-center text-2xl relative">
+                        🦺
+                    </div>
                  </div>
-              </GoldLock>
+              </div>
            </div>
         </div>
 
         {/* COLUMN 2: DAILY MISSIONS & QUESTS */}
-        <div className="lg:col-span-4 glass-panel p-5">
+        <div className="lg:col-span-3 glass-panel p-5 flex flex-col">
            <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2 text-center">
               <Swords size={16} className="text-neon-gold" /> {t("dashboard.daily_missions", "DAILY MISSIONS & QUESTS")}
            </h2>
@@ -187,9 +209,14 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
                <div className="text-center p-8 text-neon-cyan/50">{t("dashboard.zone_cleared", "Zone Cleared. Awaiting new intel...")}</div>
              ) : (
                availableTasks.map((task: any) => {
-                 const diff = (task.difficulty || "easy").toLowerCase();
+                 const titleLower = task.title.toLowerCase();
+                 let glowClass = "shadow-[0_0_15px_rgba(0,255,255,0.15)] border-neon-cyan/30";
+                 if (titleLower.includes("academic") || titleLower.includes("study") || titleLower.includes("math")) glowClass = "shadow-[0_0_15px_rgba(59,130,246,0.3)] border-blue-500/50";
+                 else if (titleLower.includes("gym") || titleLower.includes("workout") || titleLower.includes("fitness")) glowClass = "shadow-[0_0_15px_rgba(239,68,68,0.3)] border-red-500/50";
+                 else if (titleLower.includes("social") || titleLower.includes("mentorship")) glowClass = "shadow-[0_0_15px_rgba(168,85,247,0.3)] border-purple-500/50";
+
                  return (
-                   <div key={task.id} className="relative bg-brand-dark/50 border border-cardBorder rounded-lg p-4 overflow-hidden shadow-holo backdrop-blur-sm group hover:border-neon-cyan/50 transition-all">
+                   <div key={task.id} className={`relative bg-brand-dark/50 border rounded-lg p-4 overflow-hidden backdrop-blur-sm group transition-all ${glowClass}`}>
                       <div className="flex items-start gap-4">
                          <div className="w-12 h-12 rounded-full border border-neon-cyan/30 flex items-center justify-center flex-shrink-0 bg-neon-cyan/5 text-neon-cyan shadow-[0_0_10px_rgba(0,255,255,0.2)]">
                             <Zap size={20} />
@@ -214,7 +241,7 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
         </div>
 
         {/* COLUMN 3: DOPAMINE FEED & DISCOVERY */}
-        <div className="lg:col-span-4 glass-panel p-5">
+        <div className="lg:col-span-3 glass-panel p-5 flex flex-col">
            <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2 text-center">
               <Video size={16} className="text-neon-pink" /> {t("dashboard.dopamine_feed", "DOPAMINE FEED & DISCOVERY")}
            </h2>
