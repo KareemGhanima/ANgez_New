@@ -1,0 +1,30 @@
+{
+  "translation": {
+    "dashboard": {
+      "daily_quests": "المهام اليومية",
+      "subtitle": "أكمل المهام لكسب نقاط الخبرة ورفع مستواك",
+      "all_cleared": "تم إنجاز جميع المهام!",
+      "come_back": "عد غداً لتحديات جديدة.",
+      "complete": "إكمال",
+      "interested": "♡ مهتم — أرني المزيد من هذا",
+      "settings": "الإعدادات"
+    },
+    "roles": {
+      "engineering": "هندسة",
+      "medical": "طبي",
+      "athletic": "رياضي",
+      "user": "مستخدم",
+      "admin": "مدير"
+    },
+    "paywall": {
+      "premium_required": "مطلوب حساب مميز",
+      "upgrade_now": "ارتقِ الآن",
+      "unlock_features": "افتح هذه الميزة لتعزيز رحلتك.",
+      "scan_qr": "تفضل بمسح كود إنستا باي أدناه للترقية.",
+      "transaction_id": "رقم المعاملة",
+      "upload_screenshot": "رفع لقطة الشاشة",
+      "submit": "تقديم للتحقق",
+      "pending": "الدفع الخاص بك قيد انتظار موافقة المدير حالياً."
+    }
+  }
+}

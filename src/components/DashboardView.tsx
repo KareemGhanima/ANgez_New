@@ -4,6 +4,9 @@ import { useState, useRef } from "react";
 import { createClient } from "@/core/supabase/client";
 import { Check, X, Clock, Star, Zap, Shield, Swords, BookOpen, Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AvatarSystem from "./Onboarding/AvatarSystem";
+import RechartsRadarChart from "./Stats/RadarChart";
+import GoldLock from "./Paywall/GoldLock";
 
 const categoryIcons: Record<string, any> = {
   study: BookOpen,
@@ -90,10 +93,12 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
 
           {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="avatar-container w-12 h-12">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-900 to-slate-900 flex items-center justify-center text-2xl border-2 border-violet-700/50">
-                {isHighlyActive ? "🔥" : "😴"}
-              </div>
+            <div className="avatar-container w-14 h-14 overflow-hidden rounded-full border-2 border-violet-700/50 bg-slate-900 flex items-center justify-center relative">
+              <AvatarSystem 
+                styles={profile.avatar_styles || { skin: "pale", eyes: "cyber", outfit: "default" }} 
+                size={70} 
+                className="absolute -bottom-2"
+              />
             </div>
           </div>
 
@@ -101,14 +106,14 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               <div className="level-badge px-2.5 py-0.5 text-xs text-white">
-                LVL {profile.level}
+                LVL {profile.level || 1}
               </div>
-              <span className="text-xs font-semibold text-violet-400 font-orbitron uppercase tracking-widest">
-                {profile.role}
+              <span className="text-xs font-semibold text-violet-400 font-orbitron uppercase tracking-widest truncate">
+                {profile.path ? profile.path.split(":")[0] : (profile.role || "Wanderer")}
               </span>
               <div className="ml-auto streak-badge px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
                 <Zap size={11} />
-                {profile.streak}d
+                {profile.streak || 0}d
               </div>
             </div>
 
@@ -117,7 +122,7 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
               <div className="xp-bar-fill" style={{ width: `${xpPercent}%` }} />
             </div>
             <div className="flex justify-between mt-0.5">
-              <span className="text-[10px] text-violet-400/70 font-orbitron">{profile.xp} XP</span>
+              <span className="text-[10px] text-violet-400/70 font-orbitron">{profile.xp || 0} XP</span>
               <span className="text-[10px] text-slate-500 font-orbitron">100 XP</span>
             </div>
           </div>
@@ -135,6 +140,25 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
 
       {/* ===== MAIN ===== */}
       <main className="p-4 max-w-lg mx-auto mt-4">
+        {/* Radar Chart Panel */}
+        <div className="glass-panel mb-6 p-4">
+           <h2 className="font-orbitron text-sm font-bold text-violet-300 uppercase tracking-widest flex items-center gap-2 mb-2">
+            <Zap size={14} /> Power Attributes
+           </h2>
+           <GoldLock>
+             <div className="h-64">
+                <RechartsRadarChart 
+                   stats={profile.stats || { academic: 0, fitness: 0, discipline: 0, social: 0 }} 
+                />
+             </div>
+             {profile.path && profile.path.includes(":") && (
+                <div className="text-center mt-2 text-xs text-slate-400 font-orbitron">
+                   Spec: <span className="text-violet-400">{profile.path.split(":")[1]}</span>
+                </div>
+             )}
+           </GoldLock>
+        </div>
+
         <h1 className="font-orbitron text-xl font-bold mb-1 text-white/90 uppercase tracking-widest flex items-center gap-2">
           <Swords size={18} className="text-violet-400" />
           Daily Quests

@@ -1,0 +1,30 @@
+{
+  "translation": {
+    "dashboard": {
+      "daily_quests": "Daily Quests",
+      "subtitle": "Complete quests to earn XP and level up",
+      "all_cleared": "All Quests Cleared!",
+      "come_back": "Come back tomorrow for new challenges.",
+      "complete": "COMPLETE",
+      "interested": "♡ Interested — show me more like this",
+      "settings": "Settings"
+    },
+    "roles": {
+      "engineering": "Engineering",
+      "medical": "Medical",
+      "athletic": "Athletic",
+      "user": "User",
+      "admin": "Admin"
+    },
+    "paywall": {
+      "premium_required": "Premium Status Required",
+      "upgrade_now": "Upgrade Now",
+      "unlock_features": "Unlock this feature and enhance your journey.",
+      "scan_qr": "Scan the InstaPay QR code below to upgrade.",
+      "transaction_id": "Transaction ID",
+      "upload_screenshot": "Upload Screenshot",
+      "submit": "Submit Verification",
+      "pending": "Your payment is currently pending admin approval."
+    }
+  }
+}

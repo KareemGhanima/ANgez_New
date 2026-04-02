@@ -1,0 +1,30 @@
+{
+  "translation": {
+    "dashboard": {
+      "daily_quests": "Quêtes Quotidiennes",
+      "subtitle": "Complétez des quêtes pour gagner de l'XP et monter de niveau",
+      "all_cleared": "Toutes les quêtes sont terminées !",
+      "come_back": "Revenez demain pour de nouveaux défis.",
+      "complete": "COMPLÉTER",
+      "interested": "♡ Intéressé — montrez-m'en plus comme ça",
+      "settings": "Paramètres"
+    },
+    "roles": {
+      "engineering": "Ingénierie",
+      "medical": "Médical",
+      "athletic": "Athlétique",
+      "user": "Utilisateur",
+      "admin": "Administrateur"
+    },
+    "paywall": {
+      "premium_required": "Statut Premium Requis",
+      "upgrade_now": "Améliorer Maintenant",
+      "unlock_features": "Déverrouillez cette fonctionnalité pour améliorer votre parcours.",
+      "scan_qr": "Scannez le code QR InstaPay ci-dessous pour améliorer.",
+      "transaction_id": "ID de Transaction",
+      "upload_screenshot": "Télécharger une Capture d'écran",
+      "submit": "Soumettre la Vérification",
+      "pending": "Votre paiement est actuellement en attente d'approbation."
+    }
+  }
+}
