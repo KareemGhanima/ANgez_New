@@ -4,61 +4,48 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/core/supabase/client";
 
-const ROLES = ["Student", "Athlete", "Developer"];
-const INTERESTS = ["Study", "Gym", "Self-improvement", "Religion"];
+const ROLES = [
+  { label: "Student",  emoji: "📚" },
+  { label: "Athlete",  emoji: "⚡" },
+  { label: "Developer",emoji: "💻" },
+];
+
+const INTERESTS = [
+  { label: "Study",           emoji: "📖" },
+  { label: "Gym",             emoji: "🏋️" },
+  { label: "Self-improvement",emoji: "🧠" },
+  { label: "Religion",        emoji: "🌙" },
+];
 
 export default function OnboardingPage() {
-  const [role, setRole] = useState("");
+  const [role, setRole]                         = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [loading, setLoading]                   = useState(false);
+  const router   = useRouter();
   const supabase = createClient();
 
-  const toggleInterest = (i: string) => {
-    if (selectedInterests.includes(i)) {
-      setSelectedInterests(selectedInterests.filter(x => x !== i));
-    } else {
-      setSelectedInterests([...selectedInterests, i]);
-    }
-  };
+  const toggleInterest = (i: string) =>
+    setSelectedInterests((prev) =>
+      prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+    );
 
   const handleComplete = async () => {
-    if (!role) return alert("Select a role first!");
+    if (!role) return alert("Pick your class first, warrior!");
     setLoading(true);
-    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
       const userId = session.user.id;
 
-      // Upsert user details
-      const { error: userError } = await supabase
-        .from("users")
-        .upsert({
-          id: userId,
-          email: session.user.email,
-          role,
-          interests: selectedInterests,
-          level: 1,
-          xp: 0,
-          streak: 0
-        });
-
-      if (userError) throw userError;
-
-      // Upsert default theme
-      const { error: themeError } = await supabase
-        .from("theme")
-        .upsert({
-          user_id: userId,
-          primary_color: '#8b5cf6',
-          accent_color: '#6d28d9',
-          background: '#0f172a',
-          font_size: '16px'
-        });
-
-      if (themeError) throw themeError;
-
+      await supabase.from("users").upsert({
+        id: userId, email: session.user.email,
+        role, interests: selectedInterests, level: 1, xp: 0, streak: 0,
+      });
+      await supabase.from("theme").upsert({
+        user_id: userId,
+        primary_color: "#8b5cf6", accent_color: "#6d28d9",
+        background: "#060b16", font_size: "16px",
+      });
       router.push("/dashboard");
     } catch (err: any) {
       alert("Error: " + err.message);
@@ -68,44 +55,66 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <div className="glass-panel w-full max-w-lg p-8">
-        <h1 className="text-2xl font-bold text-primary mb-2">Create Character</h1>
-        <p className="text-foreground/70 mb-6">Choose your path and configure your starting stats.</p>
-        
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="rpg-bg" />
+      <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full bg-violet-900/20 blur-[100px] pointer-events-none" />
+
+      <div className="glass-panel w-full max-w-md p-8 relative z-10">
+        <div className="text-center mb-8">
+          <h1 className="font-orbitron text-2xl font-black text-white uppercase tracking-widest mb-1">
+            Create Character
+          </h1>
+          <div className="h-0.5 w-32 mx-auto bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
+          <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest">Choose your class and skills</p>
+        </div>
+
+        {/* Role Selection */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2">Class (Role)</label>
+          <label className="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <span className="h-px flex-1 bg-violet-900/50" />
+            Class
+            <span className="h-px flex-1 bg-violet-900/50" />
+          </label>
           <div className="grid grid-cols-3 gap-2">
-            {ROLES.map(r => (
+            {ROLES.map(({ label, emoji }) => (
               <button
-                key={r}
-                onClick={() => setRole(r)}
-                className={`py-2 px-3 rounded text-sm text-center border transition-colors ${
-                  role === r 
-                    ? "border-primary bg-primary/20 text-primary font-semibold" 
-                    : "border-cardBorder bg-background hover:bg-cardBorder/50 text-foreground/80"
+                key={label}
+                onClick={() => setRole(label)}
+                className={`py-3 px-2 rounded-lg text-center border transition-all flex flex-col items-center gap-1 ${
+                  role === label
+                    ? "border-violet-500 bg-violet-500/15 text-white"
+                    : "border-violet-900/30 bg-white/3 text-slate-400 hover:border-violet-700/50 hover:text-slate-200"
                 }`}
+                style={role === label ? { boxShadow: "0 0 14px rgba(139,92,246,0.25)" } : {}}
               >
-                {r}
+                <span className="text-xl">{emoji}</span>
+                <span className="text-xs font-bold font-orbitron">{label.toUpperCase()}</span>
               </button>
             ))}
           </div>
         </div>
 
+        {/* Interests */}
         <div className="mb-8">
-          <label className="block text-sm font-semibold mb-2">Interests (Skills)</label>
-          <div className="flex flex-wrap gap-2">
-            {INTERESTS.map(i => (
+          <label className="block text-xs font-bold mb-3 text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <span className="h-px flex-1 bg-violet-900/50" />
+            Skills
+            <span className="h-px flex-1 bg-violet-900/50" />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {INTERESTS.map(({ label, emoji }) => (
               <button
-                key={i}
-                onClick={() => toggleInterest(i)}
-                className={`py-1 px-3 rounded-full text-sm border transition-colors ${
-                  selectedInterests.includes(i)
-                    ? "border-primary bg-primary text-white"
-                    : "border-cardBorder bg-background text-foreground/70 hover:border-foreground/30"
+                key={label}
+                onClick={() => toggleInterest(label)}
+                className={`py-2.5 px-3 rounded-lg border transition-all flex items-center gap-2 ${
+                  selectedInterests.includes(label)
+                    ? "border-violet-500 bg-violet-500/15 text-white"
+                    : "border-violet-900/30 bg-white/3 text-slate-400 hover:border-violet-700/50 hover:text-slate-200"
                 }`}
+                style={selectedInterests.includes(label) ? { boxShadow: "0 0 10px rgba(139,92,246,0.2)" } : {}}
               >
-                {i}
+                <span>{emoji}</span>
+                <span className="text-xs font-bold">{label}</span>
               </button>
             ))}
           </div>
@@ -114,9 +123,10 @@ export default function OnboardingPage() {
         <button
           onClick={handleComplete}
           disabled={loading || !role}
-          className="w-full bg-primary hover:bg-accent disabled:opacity-50 text-white font-bold py-3 rounded transition-colors shadow-lg"
+          className="btn-ripple w-full bg-gradient-to-r from-violet-700 to-violet-500 hover:brightness-110 disabled:opacity-40 text-white font-black py-3 rounded-lg transition-all uppercase tracking-wider font-orbitron text-sm"
+          style={{ boxShadow: "0 0 24px rgba(139,92,246,0.45)" }}
         >
-          {loading ? "Saving..." : "Enter the World"}
+          {loading ? "Entering world..." : "⚔️ Enter the World"}
         </button>
       </div>
     </div>
