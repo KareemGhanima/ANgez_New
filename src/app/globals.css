@@ -1,0 +1,59 @@
+:root {
+  --primary: #8b5cf6; /* default purple based */
+  --accent: #10b981; /* default green */
+  --bg-color: #0f172a; /* dark slate */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --panel-bg: rgba(30, 41, 59, 0.7);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --font-size-base: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background: var(--bg-color);
+  font-family: inherit;
+  transition: all 0.3s ease;
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Base Gamified UI Elements */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  color: var(--primary);
+  text-shadow: 0 0 10px var(--primary);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 5px var(--primary); }
+  50% { box-shadow: 0 0 20px var(--primary), 0 0 30px var(--accent); }
+  100% { box-shadow: 0 0 5px var(--primary); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
