@@ -28,7 +28,7 @@ export function usePremiumStatus() {
           .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: "users", filter: `id=eq.${session.user.id}` },
-            (payload) => {
+            (payload: any) => {
               if (payload.new.subscription_status !== undefined) {
                 setHasPremium(payload.new.subscription_status);
               }

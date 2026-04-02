@@ -21,7 +21,7 @@ export default function RevenueOverview() {
         setTotalPremium(data.length);
         
         const counts: Record<string, number> = {};
-        data.forEach(user => {
+        data.forEach((user: any) => {
            // path is stored "Category:Specialization"
            const cat = user.path ? user.path.split(":")[0] : "Unknown";
            counts[cat] = (counts[cat] || 0) + 1;

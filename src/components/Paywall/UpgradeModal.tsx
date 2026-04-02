@@ -96,7 +96,7 @@ export default function UpgradeModal({ onClose }: { onClose: () => void }) {
                     src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/assets/global_qr.png?t=${Date.now()}`} 
                     alt="InstaPay QR" 
                     className="w-full h-full object-contain"
-                    onError={(e) => { e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg'; }} 
+                    onError={(e: any) => { e.currentTarget.src = 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg'; }} 
                  />
               </div>
               <p className="text-xs font-bold text-yellow-400">InstaPay Address: <span className="text-white select-all">OWNER_PAY_ID</span></p>
