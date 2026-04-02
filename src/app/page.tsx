@@ -1,12 +1,15 @@
-import styles from "./page.module.css";
+import { redirect } from "next/navigation";
+import { createClient } from "@/core/supabase/server";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={`glass-panel ${styles.hero}`}>
-        <h1 className="title">Welcome to Angez</h1>
-        <p>Level up your real life.</p>
-      </div>
-    </main>
-  );
+export default async function Home() {
+  const supabase = createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session) {
+    redirect("/dashboard");
+  } else {
+    redirect("/login");
+  }
+
+  return null;
 }
