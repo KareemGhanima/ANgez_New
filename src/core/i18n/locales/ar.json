@@ -1,30 +1,44 @@
 {
   "translation": {
     "dashboard": {
-      "daily_quests": "المهام اليومية",
-      "subtitle": "أكمل المهام لكسب نقاط الخبرة ورفع مستواك",
-      "all_cleared": "تم إنجاز جميع المهام!",
-      "come_back": "عد غداً لتحديات جديدة.",
-      "complete": "إكمال",
-      "interested": "♡ مهتم — أرني المزيد من هذا",
-      "settings": "الإعدادات"
+      "heros_journey": "بطل الرحلة",
+      "levels_rewards": "المستويات والجوائز",
+      "radar_chart": "مخطط الرادار للبطل",
+      "daily_missions": "مهام اليوم",
+      "focus_timers": "مؤقتات التركيز",
+      "accept_mission": "اقبل المهمة",
+      "all_cleared": "تم مسح جميع المهام القتالية!",
+      "dopamine_feed": "اكتشاف الدوبامين",
+      "add_to_missions": "ضيفه للمهام",
+      "level": "مستوى",
+      "xp": "نقطة خبرة",
+      "academic": "الدراسة",
+      "fitness": "الجيم",
+      "discipline": "الانضباط",
+      "social": "الاجتماعي",
+      "personalized_avatar": "نسختك الشخصية 2D",
+      "zone_cleared": "المنطقة نظيفة. في انتظار تعليمات جديدة...",
+      "wanderer": "رحالة",
+      "complete": "تم الإنجاز"
     },
-    "roles": {
-      "engineering": "هندسة",
-      "medical": "طبي",
-      "athletic": "رياضي",
-      "user": "مستخدم",
-      "admin": "مدير"
+    "armory": {
+      "title": "منطقة التجهيز",
+      "avatar_preview": "معاينة البطل",
+      "equipment_bay": "غرفة المعدات",
+      "inventory_store": "المخزون والمتجر",
+      "outfits": "سكنات (Outfits)",
+      "items": "أدوات",
+      "avatar_base": "البطل",
+      "equipped": "مجهزة",
+      "locked": "مقفلة",
+      "unlocked": "مفتوحة",
+      "male": "بطل ولد",
+      "female": "بطلة بنت",
+      "save_changes": "حفظ التجهيز"
     },
     "paywall": {
-      "premium_required": "مطلوب حساب مميز",
-      "upgrade_now": "ارتقِ الآن",
-      "unlock_features": "افتح هذه الميزة لتعزيز رحلتك.",
-      "scan_qr": "تفضل بمسح كود إنستا باي أدناه للترقية.",
-      "transaction_id": "رقم المعاملة",
-      "upload_screenshot": "رفع لقطة الشاشة",
-      "submit": "تقديم للتحقق",
-      "pending": "الدفع الخاص بك قيد انتظار موافقة المدير حالياً."
+      "pending": "في انتظار موافقة الدعم الفني...",
+      "upload_receipt": "رفع إيصال الدفع"
     }
   }
 }

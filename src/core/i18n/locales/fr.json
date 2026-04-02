@@ -1,30 +1,44 @@
 {
   "translation": {
     "dashboard": {
-      "daily_quests": "Quêtes Quotidiennes",
-      "subtitle": "Complétez des quêtes pour gagner de l'XP et monter de niveau",
-      "all_cleared": "Toutes les quêtes sont terminées !",
-      "come_back": "Revenez demain pour de nouveaux défis.",
-      "complete": "COMPLÉTER",
-      "interested": "♡ Intéressé — montrez-m'en plus comme ça",
-      "settings": "Paramètres"
+      "heros_journey": "LA QUÊTE DU HÉROS",
+      "levels_rewards": "NIVEAUX ET RÉCOMPENSES",
+      "radar_chart": "GRAPHIQUE RADAR",
+      "daily_missions": "MISSIONS ET QUÊTES",
+      "focus_timers": "MINUTEURS",
+      "accept_mission": "Accepter la mission",
+      "all_cleared": "Toutes les quêtes sont terminées!",
+      "dopamine_feed": "FLUX DE DOPAMINE",
+      "add_to_missions": "Ajouter aux missions",
+      "level": "Niveau",
+      "xp": "XP",
+      "academic": "ACADÉMIQUE",
+      "fitness": "FORME",
+      "discipline": "DISCIPLINE",
+      "social": "SOCIAL",
+      "personalized_avatar": "Avatar 2D personnalisé",
+      "zone_cleared": "Zone nettoyée. En attente...",
+      "wanderer": "Aventurier",
+      "complete": "TERMINÉ"
     },
-    "roles": {
-      "engineering": "Ingénierie",
-      "medical": "Médical",
-      "athletic": "Athlétique",
-      "user": "Utilisateur",
-      "admin": "Administrateur"
+    "armory": {
+      "title": "ARMURERIE DU HÉROS",
+      "avatar_preview": "APERÇU DE L'AVATAR",
+      "equipment_bay": "BAIE D'ÉQUIPEMENT",
+      "inventory_store": "INVENTAIRE ET BOUTIQUE",
+      "outfits": "TENUES",
+      "items": "OBJETS",
+      "avatar_base": "BASE D'AVATAR",
+      "equipped": "ÉQUIPÉ",
+      "locked": "VERROUILLÉ",
+      "unlocked": "DÉVERROUILLÉ",
+      "male": "AVATAR MASCULIN",
+      "female": "AVATAR FÉMININ",
+      "save_changes": "SAUVEGARDER"
     },
     "paywall": {
-      "premium_required": "Statut Premium Requis",
-      "upgrade_now": "Améliorer Maintenant",
-      "unlock_features": "Déverrouillez cette fonctionnalité pour améliorer votre parcours.",
-      "scan_qr": "Scannez le code QR InstaPay ci-dessous pour améliorer.",
-      "transaction_id": "ID de Transaction",
-      "upload_screenshot": "Télécharger une Capture d'écran",
-      "submit": "Soumettre la Vérification",
-      "pending": "Votre paiement est actuellement en attente d'approbation."
+      "pending": "En attente de confirmation...",
+      "upload_receipt": "TÉLÉCHARGER LE REÇU"
     }
   }
 }

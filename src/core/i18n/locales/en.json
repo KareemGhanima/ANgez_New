@@ -1,30 +1,44 @@
 {
   "translation": {
     "dashboard": {
-      "daily_quests": "Daily Quests",
-      "subtitle": "Complete quests to earn XP and level up",
+      "heros_journey": "THE HERO'S JOURNEY",
+      "levels_rewards": "LEVELS & REWARDS",
+      "radar_chart": "ATTRIBUTE RADAR CHART",
+      "daily_missions": "DAILY MISSIONS & QUESTS",
+      "focus_timers": "FOCUS TIMERS",
+      "accept_mission": "Accept Mission",
       "all_cleared": "All Quests Cleared!",
-      "come_back": "Come back tomorrow for new challenges.",
-      "complete": "COMPLETE",
-      "interested": "♡ Interested — show me more like this",
-      "settings": "Settings"
+      "dopamine_feed": "DOPAMINE FEED & DISCOVERY",
+      "add_to_missions": "Add to Missions",
+      "level": "Level",
+      "xp": "XP",
+      "academic": "ACADEMIC",
+      "fitness": "FITNESS",
+      "discipline": "DISCIPLINE",
+      "social": "SOCIAL",
+      "personalized_avatar": "Personalized 2D Avatar",
+      "zone_cleared": "Zone Cleared. Awaiting new intel...",
+      "wanderer": "Wanderer",
+      "complete": "COMPLETE"
     },
-    "roles": {
-      "engineering": "Engineering",
-      "medical": "Medical",
-      "athletic": "Athletic",
-      "user": "User",
-      "admin": "Admin"
+    "armory": {
+      "title": "HERO'S ARMORY",
+      "avatar_preview": "AVATAR PREVIEW & ATTRIBUTES",
+      "equipment_bay": "EQUIPMENT BAY",
+      "inventory_store": "INVENTORY & STORE",
+      "outfits": "OUTFITS",
+      "items": "ITEMS",
+      "avatar_base": "AVATAR BASE",
+      "equipped": "EQUIPPED",
+      "locked": "LOCKED",
+      "unlocked": "UNLOCKED",
+      "male": "MALE AVATAR",
+      "female": "FEMALE AVATAR",
+      "save_changes": "SAVE CHANGES"
     },
     "paywall": {
-      "premium_required": "Premium Status Required",
-      "upgrade_now": "Upgrade Now",
-      "unlock_features": "Unlock this feature and enhance your journey.",
-      "scan_qr": "Scan the InstaPay QR code below to upgrade.",
-      "transaction_id": "Transaction ID",
-      "upload_screenshot": "Upload Screenshot",
-      "submit": "Submit Verification",
-      "pending": "Your payment is currently pending admin approval."
+      "pending": "Awaiting admin confirmation...",
+      "upload_receipt": "UPLOAD RECEIPT"
     }
   }
 }

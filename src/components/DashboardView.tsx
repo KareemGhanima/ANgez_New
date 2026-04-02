@@ -6,8 +6,10 @@ import { Check, X, Clock, Star, Zap, Shield, Swords, BookOpen, Dumbbell, AlignLe
 import { cn } from "@/lib/utils";
 import AvatarSystem from "./Onboarding/AvatarSystem";
 import RechartsRadarChart from "./Stats/RadarChart";
+import ActivityHeatmap from "./Stats/ActivityHeatmap";
 import GoldLock from "./Paywall/GoldLock";
 import { useRealtimeProfile } from "@/hooks/useRealtimeProfile";
+import { useTranslation } from "react-i18next";
 
 const categoryIcons: Record<string, any> = {
   study: BookOpen,
@@ -24,6 +26,7 @@ const difficultyLabel: Record<string, string> = {
 };
 
 export default function DashboardView({ initialProfile, allTasks, userTasks: initialUserTasks, userId }: any) {
+  const { t } = useTranslation();
   const { stats: realtimeStats, xp: realtimeXP } = useRealtimeProfile(userId);
   const [profile, setProfile]       = useState(initialProfile);
   const [userTasks, setUserTasks]   = useState(initialUserTasks);
@@ -109,11 +112,11 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
         </div>
         <div className="flex items-center gap-6">
            <div className="flex flex-col items-end">
-              <span className="text-xs text-neon-gold font-bold">LEVELS & REWARDS</span>
-              <span className="text-sm">Level {currentLevel}</span>
+              <span className="text-xs text-neon-gold font-bold">{t("dashboard.levels_rewards", "LEVELS & REWARDS")}</span>
+              <span className="text-sm">{t("dashboard.level", "Level")} {currentLevel}</span>
            </div>
            <div className="flex gap-2 items-center bg-brand-dark px-3 py-1.5 rounded-full border border-cardBorder">
-              <span className="text-xs font-bold tracking-widest">{profile.username || "WANDERER"}</span>
+              <span className="text-xs font-bold tracking-widest">{profile.username || t("dashboard.wanderer", "WANDERER")}</span>
            </div>
            <button onClick={() => window.location.href = "/settings"} className="text-slate-500 hover:text-neon-cyan transition-colors">
             ⚙️
@@ -128,12 +131,12 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
         <div className="lg:col-span-4 space-y-6">
            <div className="glass-panel p-5 relative overflow-hidden group">
               <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-4 border-b border-cardBorder pb-2">
-                 <Shield size={16} className="text-neon-cyan" /> THE HERO'S JOURNEY
+                 <Shield size={16} className="text-neon-cyan" /> {t("dashboard.heros_journey", "THE HERO'S JOURNEY")}
               </h2>
               
               <div className="flex flex-col items-center mb-6">
                  <div className="text-[10px] text-neon-cyan tracking-widest uppercase mb-4 text-center">
-                    Personalized 2D Avatar<br/>({profile.path?.split(":")[1] || "Unassigned"})
+                    {t("dashboard.personalized_avatar", "Personalized 2D Avatar")}<br/>({profile.path?.split(":")[1] || t("dashboard.wanderer", "Unassigned")})
                  </div>
                  <div className="relative w-48 h-48 rounded-full border-4 border-neon-cyan/30 flex items-center justify-center bg-brand-dark shadow-[0_0_30px_rgba(0,255,255,0.15)] mb-4">
                     <AvatarSystem styles={profile.avatar_styles || { skin: "pale", eyes: "cyber", outfit: "default" }} size={160} className="absolute -bottom-4 drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]" />
@@ -145,18 +148,18 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
                        <div className="mana-bar-fill" style={{ width: `${xpPercent}%` }} />
                     </div>
                     <div className="flex justify-between mt-1 px-1">
-                       <span className="text-[10px] text-neon-cyan">XP: {profile.xp.toLocaleString()} / {(currentLevel * 1000).toLocaleString()}</span>
+                       <span className="text-[10px] text-neon-cyan">{t("dashboard.xp", "XP")}: {profile.xp.toLocaleString()} / {(currentLevel * 1000).toLocaleString()}</span>
                     </div>
                  </div>
 
                  <div className="w-full text-center py-2 bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent border-y border-neon-cyan/30 mt-2 text-neon-cyan font-bold tracking-widest text-xs uppercase">
-                    Level {currentLevel} &bull; {profile.path?.split(":")[0] || "Wanderer"}
+                    {t("dashboard.level", "Level")} {currentLevel} &bull; {profile.path?.split(":")[0] || t("dashboard.wanderer", "Wanderer")}
                  </div>
               </div>
 
               {/* RADAR CHART */}
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-2">
-                 <BarChart3 size={16} className="text-neon-green" /> ATTRIBUTE RADAR CHART
+              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-2 text-center">
+                 <BarChart3 size={16} className="text-neon-green" /> {t("dashboard.radar_chart", "ATTRIBUTE RADAR CHART")}
               </h2>
               <GoldLock>
                  <div className="h-64 w-full">
@@ -168,12 +171,12 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
 
         {/* COLUMN 2: DAILY MISSIONS & QUESTS */}
         <div className="lg:col-span-4 glass-panel p-5">
-           <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2">
-              <Swords size={16} className="text-neon-gold" /> DAILY MISSIONS & QUESTS
+           <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2 text-center">
+              <Swords size={16} className="text-neon-gold" /> {t("dashboard.daily_missions", "DAILY MISSIONS & QUESTS")}
            </h2>
 
            <div className="flex justify-center gap-2 mb-6">
-              <span className="bg-brand-dark border border-cardBorder text-xs px-3 py-1 rounded text-slate-400">FOCUS TIMERS</span>
+              <span className="bg-brand-dark border border-cardBorder text-xs px-3 py-1 rounded text-slate-400">{t("dashboard.focus_timers", "FOCUS TIMERS")}</span>
               <button className="bg-brand-dark border border-neon-cyan/50 text-neon-cyan text-xs px-3 py-1 rounded hover:bg-neon-cyan/10">10</button>
               <button className="bg-brand-dark border border-neon-cyan/50 text-neon-cyan text-xs px-3 py-1 rounded hover:bg-neon-cyan/10">25</button>
               <button className="bg-brand-dark border border-neon-cyan/50 text-neon-cyan text-xs px-3 py-1 rounded hover:bg-neon-cyan/10">50 min</button>
@@ -181,7 +184,7 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
 
            <div className="space-y-4">
              {availableTasks.length === 0 ? (
-               <div className="text-center p-8 text-neon-cyan/50">Zone Cleared. Awaiting new intel...</div>
+               <div className="text-center p-8 text-neon-cyan/50">{t("dashboard.zone_cleared", "Zone Cleared. Awaiting new intel...")}</div>
              ) : (
                availableTasks.map((task: any) => {
                  const diff = (task.difficulty || "easy").toLowerCase();
@@ -194,24 +197,26 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
                          <div className="flex-1">
                             <h3 className="font-bold text-sm tracking-wide mb-1 leading-tight">{task.title}</h3>
                             <div className="text-neon-cyan font-bold text-xs uppercase tracking-widest shadow-neon-cyan drop-shadow-md">
-                               +{task.xp} XP
+                               +{task.xp} {t("dashboard.xp", "XP")}
                             </div>
                          </div>
                       </div>
                       <button onClick={() => handleTaskAction(task, "completed")} className="mt-4 w-full py-2 bg-brand-black border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black font-black tracking-widest text-xs uppercase transition-all shadow-[0_0_15px_rgba(0,255,255,0.3)]">
-                         Accept Mission
+                         {t("dashboard.accept_mission", "Accept Mission")}
                       </button>
                    </div>
                  );
                })
              )}
            </div>
+
+           <ActivityHeatmap streak={profile.streak || 0} xp={profile.xp || 0} />
         </div>
 
         {/* COLUMN 3: DOPAMINE FEED & DISCOVERY */}
         <div className="lg:col-span-4 glass-panel p-5">
-           <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2">
-              <Video size={16} className="text-neon-pink" /> DOPAMINE FEED & DISCOVERY
+           <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2 text-center">
+              <Video size={16} className="text-neon-pink" /> {t("dashboard.dopamine_feed", "DOPAMINE FEED & DISCOVERY")}
            </h2>
            <GoldLock>
               <div className="space-y-4">
@@ -225,9 +230,9 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
                        <div className="w-2/3 p-3 flex flex-col justify-between">
                           <div>
                              <h4 className="text-xs font-bold leading-tight">1-MINUTE METABOLIC BOOST</h4>
-                             <p className="text-[10px] text-neon-green font-bold mt-1">+30 XP</p>
+                             <p className="text-[10px] text-neon-green font-bold mt-1">+30 {t("dashboard.xp", "XP")}</p>
                           </div>
-                          <button className="self-start mt-2 px-3 py-1 text-[10px] border border-neon-cyan text-neon-cyan rounded hover:bg-neon-cyan/20">Add to Missions</button>
+                          <button className="self-start mt-2 px-3 py-1 text-[10px] border border-neon-cyan text-neon-cyan rounded hover:bg-neon-cyan/20">{t("dashboard.add_to_missions", "Add to Missions")}</button>
                        </div>
                     </div>
                  ))}
