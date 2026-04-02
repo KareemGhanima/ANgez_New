@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/core/supabase/client";
-import { Check, X, Clock, Star, Zap, Shield, Swords, BookOpen, Dumbbell } from "lucide-react";
+import { Check, X, Clock, Star, Zap, Shield, Swords, BookOpen, Dumbbell, AlignLeft, BarChart3, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AvatarSystem from "./Onboarding/AvatarSystem";
 import RechartsRadarChart from "./Stats/RadarChart";
 import GoldLock from "./Paywall/GoldLock";
+import { useRealtimeProfile } from "@/hooks/useRealtimeProfile";
 
 const categoryIcons: Record<string, any> = {
   study: BookOpen,
@@ -22,18 +23,23 @@ const difficultyLabel: Record<string, string> = {
   hard: "HARD",
 };
 
-const timeEstimates: Record<string, string> = {
-  easy: "15m",
-  medium: "30m",
-  hard: "60m",
-};
-
 export default function DashboardView({ initialProfile, allTasks, userTasks: initialUserTasks, userId }: any) {
+  const { stats: realtimeStats, xp: realtimeXP } = useRealtimeProfile(userId);
   const [profile, setProfile]       = useState(initialProfile);
   const [userTasks, setUserTasks]   = useState(initialUserTasks);
   const [xpFloats, setXpFloats]     = useState<{ id: number; amount: number }[]>([]);
   const floatId = useRef(0);
   const supabase = createClient();
+
+  useEffect(() => {
+    // Sync realtime updates
+    if (realtimeXP > 0) setProfile((p: any) => ({ ...p, xp: realtimeXP }));
+    if (realtimeStats) setProfile((p: any) => ({ ...p, stats: realtimeStats }));
+  }, [realtimeXP, realtimeStats]);
+
+  const currentLevel = Math.floor(profile.xp / 1000) + 1;
+  const xpIntoCurrentLevel = profile.xp % 1000;
+  const xpPercent = Math.min((xpIntoCurrentLevel / 1000) * 100, 100);
 
   const processedTaskIds = userTasks.map((t: any) => t.task_id);
   const availableTasks   = allTasks.filter((t: any) => !processedTaskIds.includes(t.id)).slice(0, 5);
@@ -49,197 +55,186 @@ export default function DashboardView({ initialProfile, allTasks, userTasks: ini
 
     if (action === "completed") {
       triggerXPFloat(task.xp);
-      const newXP    = profile.xp + task.xp;
-      let newLevel   = profile.level;
+      const newXP = profile.xp + task.xp;
+      
+      // Level Math
+      const newLevel = Math.floor(newXP / 1000) + 1;
       let newStreak  = profile.streak;
-
-      if (newXP >= 100) newLevel += Math.floor(newXP / 100);
-
       const completedToday = userTasks.some((t: any) => t.status === "completed");
       if (!completedToday) newStreak += 1;
 
-      const updated = { ...profile, xp: newXP % 100, level: newLevel, streak: newStreak };
+      // Tag-Based Parsing
+      let newStats = { ...(profile.stats || { academic: 0, fitness: 0, discipline: 0, social: 0 }) };
+      const titleLower = task.title.toLowerCase();
+      const pathLower = (profile.path || "").toLowerCase();
+
+      if (titleLower.includes("#academic") || titleLower.includes("study") || pathLower.includes("engineering") || pathLower.includes("medical")) {
+         newStats.academic += task.xp;
+      } else if (titleLower.includes("#fitness") || titleLower.includes("gym") || titleLower.includes("workout") || pathLower.includes("athletic")) {
+         newStats.fitness += task.xp;
+      } else if (titleLower.includes("#social")) {
+         newStats.social += task.xp;
+      } else {
+         const split = Math.floor(task.xp / 4);
+         newStats.academic += split; newStats.fitness += split; newStats.discipline += split; newStats.social += split;
+      }
+
+      const updated = { ...profile, xp: newXP, level: newLevel, streak: newStreak, stats: newStats };
       setProfile(updated);
 
       await supabase.from("user_tasks").insert({ user_id: userId, task_id: task.id, status: action });
-      await supabase.from("users").update({ xp: updated.xp, level: updated.level, streak: updated.streak }).eq("id", userId);
+      await supabase.from("users").update({ xp: newXP, level: newLevel, streak: newStreak, stats: newStats }).eq("id", userId);
     } else {
       await supabase.from("user_tasks").insert({ user_id: userId, task_id: task.id, status: action });
     }
   };
 
-  const isHighlyActive = profile.streak > 3;
-  const xpPercent = Math.min(profile.xp, 100);
-
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen pb-16 font-orbitron text-white">
       {/* Animated Background */}
       <div className="rpg-bg" />
 
       {/* Floating XP numbers */}
       {xpFloats.map((f) => (
-        <div
-          key={f.id}
-          className="xp-float fixed z-50 top-20 right-8 font-orbitron text-2xl font-black text-yellow-300 pointer-events-none select-none"
-          style={{ textShadow: "0 0 16px rgba(251,191,36,0.9)" }}
-        >
+        <div key={f.id} className="xp-float fixed z-50 top-20 right-1/2 transform translate-x-1/2 font-black text-neon-cyan pointer-events-none select-none text-4xl" style={{ textShadow: "0 0 20px rgba(0,255,255,0.9)" }}>
           +{f.amount} XP
         </div>
       ))}
 
       {/* ===== HEADER ===== */}
-      <header className="glass-panel-header sticky top-0 z-20 px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            <div className="avatar-container w-14 h-14 overflow-hidden rounded-full border-2 border-violet-700/50 bg-slate-900 flex items-center justify-center relative">
-              <AvatarSystem 
-                styles={profile.avatar_styles || { skin: "pale", eyes: "cyber", outfit: "default" }} 
-                size={70} 
-                className="absolute -bottom-2"
-              />
-            </div>
-          </div>
-
-          {/* Level badge + XP */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="level-badge px-2.5 py-0.5 text-xs text-white">
-                LVL {profile.level || 1}
-              </div>
-              <span className="text-xs font-semibold text-violet-400 font-orbitron uppercase tracking-widest truncate">
-                {profile.path ? profile.path.split(":")[0] : (profile.role || "Wanderer")}
-              </span>
-              <div className="ml-auto streak-badge px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-                <Zap size={11} />
-                {profile.streak || 0}d
-              </div>
-            </div>
-
-            {/* XP Bar */}
-            <div className="xp-bar-track w-full h-2">
-              <div className="xp-bar-fill" style={{ width: `${xpPercent}%` }} />
-            </div>
-            <div className="flex justify-between mt-0.5">
-              <span className="text-[10px] text-violet-400/70 font-orbitron">{profile.xp || 0} XP</span>
-              <span className="text-[10px] text-slate-500 font-orbitron">100 XP</span>
-            </div>
-          </div>
-
-          {/* Settings */}
-          <button
-            onClick={() => window.location.href = "/settings"}
-            title="Settings"
-            className="text-slate-500 hover:text-violet-400 transition-colors text-lg ml-1"
-          >
+      <header className="glass-panel-header sticky top-0 z-20 px-6 py-4 flex justify-between items-center shadow-holo">
+        <div className="flex items-center gap-4">
+           <Zap className="text-neon-cyan" size={24} />
+           <span className="text-xl font-black tracking-[0.2em] text-neon-cyan">ANGEZ <span className="text-white opacity-50 text-sm">LIFE RPG</span></span>
+        </div>
+        <div className="flex items-center gap-6">
+           <div className="flex flex-col items-end">
+              <span className="text-xs text-neon-gold font-bold">LEVELS & REWARDS</span>
+              <span className="text-sm">Level {currentLevel}</span>
+           </div>
+           <div className="flex gap-2 items-center bg-brand-dark px-3 py-1.5 rounded-full border border-cardBorder">
+              <span className="text-xs font-bold tracking-widest">{profile.username || "WANDERER"}</span>
+           </div>
+           <button onClick={() => window.location.href = "/settings"} className="text-slate-500 hover:text-neon-cyan transition-colors">
             ⚙️
-          </button>
+           </button>
         </div>
       </header>
 
-      {/* ===== MAIN ===== */}
-      <main className="p-4 max-w-lg mx-auto mt-4">
-        {/* Radar Chart Panel */}
-        <div className="glass-panel mb-6 p-4">
-           <h2 className="font-orbitron text-sm font-bold text-violet-300 uppercase tracking-widest flex items-center gap-2 mb-2">
-            <Zap size={14} /> Power Attributes
+      {/* ===== MAIN 3-COLUMN LAYOUT ===== */}
+      <main className="p-4 md:p-6 max-w-[1600px] mx-auto mt-2 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* COLUMN 1: THE HERO'S JOURNEY (AVATAR & RADAR) */}
+        <div className="lg:col-span-4 space-y-6">
+           <div className="glass-panel p-5 relative overflow-hidden group">
+              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-4 border-b border-cardBorder pb-2">
+                 <Shield size={16} className="text-neon-cyan" /> THE HERO'S JOURNEY
+              </h2>
+              
+              <div className="flex flex-col items-center mb-6">
+                 <div className="text-[10px] text-neon-cyan tracking-widest uppercase mb-4 text-center">
+                    Personalized 2D Avatar<br/>({profile.path?.split(":")[1] || "Unassigned"})
+                 </div>
+                 <div className="relative w-48 h-48 rounded-full border-4 border-neon-cyan/30 flex items-center justify-center bg-brand-dark shadow-[0_0_30px_rgba(0,255,255,0.15)] mb-4">
+                    <AvatarSystem styles={profile.avatar_styles || { skin: "pale", eyes: "cyber", outfit: "default" }} size={160} className="absolute -bottom-4 drop-shadow-[0_0_15px_rgba(0,255,255,0.4)]" />
+                 </div>
+                 
+                 {/* MANA BAR (XP) */}
+                 <div className="w-full px-4 mb-2">
+                    <div className="mana-bar-track w-full h-3">
+                       <div className="mana-bar-fill" style={{ width: `${xpPercent}%` }} />
+                    </div>
+                    <div className="flex justify-between mt-1 px-1">
+                       <span className="text-[10px] text-neon-cyan">XP: {profile.xp.toLocaleString()} / {(currentLevel * 1000).toLocaleString()}</span>
+                    </div>
+                 </div>
+
+                 <div className="w-full text-center py-2 bg-gradient-to-r from-transparent via-neon-cyan/20 to-transparent border-y border-neon-cyan/30 mt-2 text-neon-cyan font-bold tracking-widest text-xs uppercase">
+                    Level {currentLevel} &bull; {profile.path?.split(":")[0] || "Wanderer"}
+                 </div>
+              </div>
+
+              {/* RADAR CHART */}
+              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-2">
+                 <BarChart3 size={16} className="text-neon-green" /> ATTRIBUTE RADAR CHART
+              </h2>
+              <GoldLock>
+                 <div className="h-64 w-full">
+                    <RechartsRadarChart stats={profile.stats || { academic: 0, fitness: 0, discipline: 0, social: 0 }} />
+                 </div>
+              </GoldLock>
+           </div>
+        </div>
+
+        {/* COLUMN 2: DAILY MISSIONS & QUESTS */}
+        <div className="lg:col-span-4 glass-panel p-5">
+           <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2">
+              <Swords size={16} className="text-neon-gold" /> DAILY MISSIONS & QUESTS
+           </h2>
+
+           <div className="flex justify-center gap-2 mb-6">
+              <span className="bg-brand-dark border border-cardBorder text-xs px-3 py-1 rounded text-slate-400">FOCUS TIMERS</span>
+              <button className="bg-brand-dark border border-neon-cyan/50 text-neon-cyan text-xs px-3 py-1 rounded hover:bg-neon-cyan/10">10</button>
+              <button className="bg-brand-dark border border-neon-cyan/50 text-neon-cyan text-xs px-3 py-1 rounded hover:bg-neon-cyan/10">25</button>
+              <button className="bg-brand-dark border border-neon-cyan/50 text-neon-cyan text-xs px-3 py-1 rounded hover:bg-neon-cyan/10">50 min</button>
+           </div>
+
+           <div className="space-y-4">
+             {availableTasks.length === 0 ? (
+               <div className="text-center p-8 text-neon-cyan/50">Zone Cleared. Awaiting new intel...</div>
+             ) : (
+               availableTasks.map((task: any) => {
+                 const diff = (task.difficulty || "easy").toLowerCase();
+                 return (
+                   <div key={task.id} className="relative bg-brand-dark/50 border border-cardBorder rounded-lg p-4 overflow-hidden shadow-holo backdrop-blur-sm group hover:border-neon-cyan/50 transition-all">
+                      <div className="flex items-start gap-4">
+                         <div className="w-12 h-12 rounded-full border border-neon-cyan/30 flex items-center justify-center flex-shrink-0 bg-neon-cyan/5 text-neon-cyan shadow-[0_0_10px_rgba(0,255,255,0.2)]">
+                            <Zap size={20} />
+                         </div>
+                         <div className="flex-1">
+                            <h3 className="font-bold text-sm tracking-wide mb-1 leading-tight">{task.title}</h3>
+                            <div className="text-neon-cyan font-bold text-xs uppercase tracking-widest shadow-neon-cyan drop-shadow-md">
+                               +{task.xp} XP
+                            </div>
+                         </div>
+                      </div>
+                      <button onClick={() => handleTaskAction(task, "completed")} className="mt-4 w-full py-2 bg-brand-black border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black font-black tracking-widest text-xs uppercase transition-all shadow-[0_0_15px_rgba(0,255,255,0.3)]">
+                         Accept Mission
+                      </button>
+                   </div>
+                 );
+               })
+             )}
+           </div>
+        </div>
+
+        {/* COLUMN 3: DOPAMINE FEED & DISCOVERY */}
+        <div className="lg:col-span-4 glass-panel p-5">
+           <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 mb-6 border-b border-cardBorder pb-2">
+              <Video size={16} className="text-neon-pink" /> DOPAMINE FEED & DISCOVERY
            </h2>
            <GoldLock>
-             <div className="h-64">
-                <RechartsRadarChart 
-                   stats={profile.stats || { academic: 0, fitness: 0, discipline: 0, social: 0 }} 
-                />
-             </div>
-             {profile.path && profile.path.includes(":") && (
-                <div className="text-center mt-2 text-xs text-slate-400 font-orbitron">
-                   Spec: <span className="text-violet-400">{profile.path.split(":")[1]}</span>
-                </div>
-             )}
+              <div className="space-y-4">
+                 {[1,2,3,4].map((i) => (
+                    <div key={i} className="flex bg-brand-dark/80 border border-cardBorder rounded-lg overflow-hidden group hover:border-neon-pink/50 transition-all">
+                       <div className="w-1/3 bg-slate-800 relative xl:min-h-[100px]">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
+                             <Video size={14} className="text-white drop-shadow-md" />
+                          </div>
+                       </div>
+                       <div className="w-2/3 p-3 flex flex-col justify-between">
+                          <div>
+                             <h4 className="text-xs font-bold leading-tight">1-MINUTE METABOLIC BOOST</h4>
+                             <p className="text-[10px] text-neon-green font-bold mt-1">+30 XP</p>
+                          </div>
+                          <button className="self-start mt-2 px-3 py-1 text-[10px] border border-neon-cyan text-neon-cyan rounded hover:bg-neon-cyan/20">Add to Missions</button>
+                       </div>
+                    </div>
+                 ))}
+              </div>
            </GoldLock>
         </div>
 
-        <h1 className="font-orbitron text-xl font-bold mb-1 text-white/90 uppercase tracking-widest flex items-center gap-2">
-          <Swords size={18} className="text-violet-400" />
-          Daily Quests
-        </h1>
-        <p className="text-xs text-slate-500 mb-5 uppercase tracking-widest">
-          Complete quests to earn XP and level up
-        </p>
-
-        <div className="space-y-4">
-          {availableTasks.length === 0 ? (
-            <div className="quest-card p-8 text-center">
-              <div className="text-4xl mb-3">🎮</div>
-              <p className="text-violet-300 font-semibold text-lg font-orbitron">All Quests Cleared!</p>
-              <p className="text-slate-500 text-sm mt-2">Come back tomorrow for new challenges.</p>
-            </div>
-          ) : (
-            availableTasks.map((task: any) => {
-              const cat    = (task.category || "default").toLowerCase();
-              const diff   = (task.difficulty || "easy").toLowerCase();
-              const Icon   = categoryIcons[cat] || categoryIcons.default;
-
-              return (
-                <div key={task.id} className="quest-card p-4">
-                  {/* Top row */}
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-9 h-9 rounded-lg bg-violet-900/40 border border-violet-700/30 flex items-center justify-center flex-shrink-0">
-                      <Icon size={18} className="text-violet-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-base text-white leading-tight">{task.title}</h3>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded border font-orbitron", `diff-${diff}`)}>
-                          {difficultyLabel[diff] || diff.toUpperCase()}
-                        </span>
-                        <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                          <Clock size={10} /> {timeEstimates[diff] || "20m"}
-                        </span>
-                      </div>
-                    </div>
-                    {/* XP Badge */}
-                    <div className="flex-shrink-0 flex flex-col items-center bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-2.5 py-1.5">
-                      <Star size={12} className="text-yellow-400" fill="currentColor" />
-                      <span className="text-yellow-300 font-orbitron font-bold text-sm leading-none mt-0.5">+{task.xp}</span>
-                      <span className="text-[9px] text-yellow-600 font-orbitron">XP</span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-4 gap-2">
-                    <button
-                      onClick={() => handleTaskAction(task, "completed")}
-                      className="btn-complete btn-ripple col-span-2 py-2 rounded-lg flex items-center justify-center gap-1.5 font-bold text-sm"
-                    >
-                      <Check size={15} /> COMPLETE
-                    </button>
-                    <button
-                      onClick={() => handleTaskAction(task, "later")}
-                      className="btn-later btn-ripple py-2 rounded-lg flex items-center justify-center gap-1"
-                    >
-                      <Clock size={15} />
-                    </button>
-                    <button
-                      onClick={() => handleTaskAction(task, "skipped")}
-                      className="btn-skip btn-ripple py-2 rounded-lg flex items-center justify-center gap-1"
-                    >
-                      <X size={15} />
-                    </button>
-                  </div>
-                  <div className="mt-2 text-center">
-                    <button
-                      onClick={() => handleTaskAction(task, "interested")}
-                      className="btn-interested text-xs"
-                    >
-                      ♡ Interested — show me more like this
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
       </main>
     </div>
   );

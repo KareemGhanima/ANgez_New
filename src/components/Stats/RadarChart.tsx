@@ -3,54 +3,47 @@
 import { useMemo } from "react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts";
 
-interface StatsProps {
-  stats: {
-    academic: number;
-    fitness: number;
-    discipline: number;
-    social: number;
-  };
-  className?: string;
-}
+export default function RechartsRadarChart({ stats }: { stats: { academic: number; fitness: number; discipline: number; social: number } }) {
+  const data = useMemo(() => {
+     return [
+       { subject: "ACADEMIC", A: stats.academic, fullMark: 100 },
+       { subject: "FITNESS", A: stats.fitness, fullMark: 100 },
+       { subject: "DISCIPLINE", A: stats.discipline, fullMark: 100 },
+       { subject: "SOCIAL", A: stats.social, fullMark: 100 },
+     ];
+  }, [stats]);
 
-export default function RechartsRadarChart({ stats, className = "" }: StatsProps) {
-  // Dynamically calculate the maximum domain to scale the chart based on the user's highest XP.
-  // The axis expands per 1000 XP increment basically.
-  const maxStat = Math.max(stats.academic, stats.fitness, stats.discipline, stats.social, 100);
-  const domainMax = Math.ceil(maxStat / 1000) * 1000;
-
-  const data = useMemo(() => [
-    { subject: "Academic", A: stats.academic, fullMark: domainMax },
-    { subject: "Fitness", A: stats.fitness, fullMark: domainMax },
-    { subject: "Discipline", A: stats.discipline, fullMark: domainMax },
-    { subject: "Social", A: stats.social, fullMark: domainMax },
-  ], [stats, domainMax]);
+  const maxVal = useMemo(() => {
+     const max = Math.max(stats.academic, stats.fitness, stats.discipline, stats.social);
+     return Math.ceil(Math.max(100, max) / 100) * 100;
+  }, [stats]);
 
   return (
-    <div className={`w-full h-full relative ${className}`}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-          <PolarGrid stroke="rgba(139, 92, 246, 0.3)" />
-          <PolarAngleAxis 
-            dataKey="subject" 
-            tick={{ fill: "#a855f7", fontSize: 12, fontFamily: "Orbitron" }} 
-          />
-          <PolarRadiusAxis 
-            angle={30} 
-            domain={[0, domainMax]} 
-            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
-            axisLine={false}
-          />
-          <Radar
-            name="XP Stats"
-            dataKey="A"
-            stroke="#8b5cf6"
-            strokeWidth={2}
-            fill="#8b5cf6"
-            fillOpacity={0.5}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height="100%">
+      <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+        <PolarGrid stroke="rgba(0, 255, 255, 0.15)" />
+        <PolarAngleAxis dataKey="subject" tick={{ fill: "#e2e8f0", fontSize: 10, fontFamily: "Orbitron" }} />
+        <PolarRadiusAxis angle={30} domain={[0, maxVal]} tick={false} axisLine={false} />
+        
+        {/* Holographic Glowing Lines */}
+        <Radar
+          name="Attributes"
+          dataKey="A"
+          stroke="#00FFFF"
+          strokeWidth={2}
+          fill="url(#cyanGlow)"
+          fillOpacity={0.6}
+          dot={{ r: 3, fill: "#39FF14", strokeWidth: 1, stroke: "#00FFFF" }}
+        />
+        
+        {/* SVG Definition for Neon Glow Fill */}
+        <defs>
+           <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#00FFFF" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="#00FFFF" stopOpacity={0.1} />
+           </radialGradient>
+        </defs>
+      </RadarChart>
+    </ResponsiveContainer>
   );
 }
