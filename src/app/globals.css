@@ -29,5 +29,5 @@
 
 /* Glassmorphism utility */
 .glass-panel {
-  @apply bg-card/80 backdrop-blur-md border border-cardBorder rounded-xl shadow-lg;
+  @apply bg-card backdrop-blur-md border border-cardBorder rounded-xl shadow-lg;
 }
