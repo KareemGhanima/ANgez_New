@@ -4,10 +4,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap');
 
-@import "tw-animate-css";
-
-@import "shadcn/tailwind.css";
-
 @layer base {
   :root {
     --background: oklch(1 0 0);
@@ -56,8 +52,7 @@
     --sidebar-ring: oklch(0.708 0 0);
   }
 
-  * { box-sizing: border-box;
-    @apply border-border outline-ring/50; }
+  * { box-sizing: border-box; border-color: var(--border); }
 
   body {
     background-color: var(--background);

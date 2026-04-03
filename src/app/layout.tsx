@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Inter, Cairo } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/core/supabase/server";
 import I18nProvider from "@/core/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const cairo = Cairo({ subsets: ["arabic"], variable: "--font-cairo", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Angez | Gamified Productivity",
-  description: "Level up your life with gamified productivity.",
+  title: "Angez | Life RPG",
+  description: "Level up your life. The gamified productivity engine.",
 };
 
 export default async function RootLayout({
@@ -21,7 +20,7 @@ export default async function RootLayout({
 }>) {
   const supabase = createClient();
   const { data: { session } } = await supabase.auth.getSession();
-  
+
   let themeStyle = {};
   if (session) {
     const { data: theme } = await supabase
@@ -29,19 +28,18 @@ export default async function RootLayout({
       .select("*")
       .eq("user_id", session.user.id)
       .single();
-      
     if (theme) {
       themeStyle = {
         "--primary-color": theme.primary_color,
-        "--accent-color": theme.accent_color,
-        "--background": theme.background,
-        fontSize: theme.font_size, // this will scale rems
+        "--accent-color":  theme.accent_color,
+        "--background":    theme.background,
+        fontSize:          theme.font_size,
       } as React.CSSProperties;
     }
   }
 
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
+    <html lang="en" className={cn("ltr", inter.variable, cairo.variable)}>
       <body className={inter.className} style={themeStyle}>
         <I18nProvider>
           {children}
