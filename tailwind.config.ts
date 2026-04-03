@@ -20,6 +20,28 @@ const config: Config = {
         "neon-cyan": "#00FFFF",
         "neon-green": "#39FF14",
         "neon-gold": "#FFD700",
+        "neon-purple": "#BC13FE",
+        "deep-slate": "#1E293B",
+        "deep-bg": "#020617",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1", filter: "brightness(100%) blur(0px)" },
+          "50%": { opacity: "0.8", filter: "brightness(150%) blur(1px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+      },
+      animation: {
+        float: "float 3s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        shimmer: "shimmer 2s linear infinite",
       },
       boxShadow: {
         "neon-cyan": "0 0 15px -3px rgba(0, 255, 255, 0.4)",

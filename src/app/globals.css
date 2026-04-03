@@ -377,3 +377,60 @@
   border: 1px solid rgba(251,191,36,0.35);
   color: #fbbf24;
 }
+
+/* ====================== */
+/* AVATAR SELECTION       */
+/* ====================== */
+
+/* Glow shimmer sweep on selected avatar card */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Bounce-in for the checkmark indicator */
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.3); }
+  60%  { opacity: 1; transform: scale(1.25); }
+  80%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Floating particle drift */
+@keyframes float {
+  0%   { transform: translateY(0px) translateX(0px); opacity: 0.1; }
+  25%  { opacity: 0.3; }
+  50%  { transform: translateY(-40px) translateX(15px); opacity: 0.2; }
+  75%  { opacity: 0.3; }
+  100% { transform: translateY(-80px) translateX(-10px); opacity: 0; }
+}
+
+/* ====================== */
+/* UTILITY HERO PERKS     */
+/* ====================== */
+
+@layer components {
+  /* Futuristic glass card with subtle inner shadow */
+  .glass-card {
+    @apply border border-white/10 bg-slate-950/80 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)];
+  }
+
+  /* High-visibility touch targets for mobile */
+  .touch-target {
+    @apply min-h-[48px] min-w-[48px] flex items-center justify-center transition-transform active:scale-95;
+  }
+
+  /* Neon text intensity */
+  .neon-text-cyan {
+    @apply text-neon-cyan drop-shadow-[0_0_8px_rgba(0,255,255,0.8)];
+  }
+
+  .neon-text-purple {
+    @apply text-neon-purple drop-shadow-[0_0_8px_rgba(188,19,254,0.8)];
+  }
+
+  /* Gradient text utility */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan via-white to-neon-purple;
+  }
+}

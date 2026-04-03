@@ -4,6 +4,8 @@ import "./globals.css";
 import { createClient } from "@/core/supabase/server";
 import I18nProvider from "@/core/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
+import { AngezProvider } from "@/context/AngezContext";
+import NavBar from "@/components/ui/NavBar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const cairo = Cairo({ subsets: ["arabic"], variable: "--font-cairo", display: "swap" });
@@ -40,10 +42,17 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={cn("ltr", inter.variable, cairo.variable)}>
-      <body className={inter.className} style={themeStyle}>
-        <I18nProvider>
-          {children}
-        </I18nProvider>
+      <body className={cn(inter.className, "bg-brand-black")}>
+        <AngezProvider>
+          <div className="flex">
+            <NavBar />
+            <main className="flex-1 lg:ml-64 min-h-screen relative overflow-x-hidden">
+              <I18nProvider>
+                {children}
+              </I18nProvider>
+            </main>
+          </div>
+        </AngezProvider>
       </body>
     </html>
   );
