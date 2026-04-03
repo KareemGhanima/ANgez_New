@@ -1,33 +1,28 @@
 "use client";
 
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { useGameStore } from "@/store/gameStore";
 
 const RTL_LANGUAGES = ["ar"];
 
-const FONTS = {
-  ar: "'Cairo', sans-serif",
-  en: "'Inter', sans-serif",
-  fr: "'Inter', sans-serif",
+const FONTS: Record<string, string> = {
+  ar: "var(--font-cairo), 'Cairo', sans-serif",
+  en: "var(--font-inter), 'Inter', sans-serif",
+  fr: "var(--font-inter), 'Inter', sans-serif",
 };
 
-// Use useLayoutEffect on client to avoid flash, but fall back to useEffect on server
-const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
-
 export function useRTL() {
+  // ✅ Safe: default 'en' prevents any SSR mismatch
   const language = useGameStore(s => s.profile?.language ?? "en");
   const isRTL = RTL_LANGUAGES.includes(language);
 
-  useIsomorphicLayoutEffect(() => {
+  // ✅ useEffect (not useLayoutEffect) — runs only on client, zero SSR
+  useEffect(() => {
     const html = document.documentElement;
     html.dir = isRTL ? "rtl" : "ltr";
     html.lang = language;
+    html.style.fontFamily = FONTS[language] ?? FONTS.en;
 
-    // Swap font family on the root element
-    html.style.fontFamily = FONTS[language as keyof typeof FONTS] ?? FONTS.en;
-
-    // Optionally add a class for RTL-specific Tailwind overrides
     if (isRTL) {
       html.classList.add("rtl");
       html.classList.remove("ltr");

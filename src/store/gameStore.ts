@@ -1,7 +1,6 @@
 /**
  * Angez RPG – Global Game Store
- * Zustand + persist + devtools
- * RULE: No UI-only state here. Only game/domain state.
+ * Zustand + persist (SSR-safe with skipHydration) + devtools
  */
 
 import { create } from "zustand";
@@ -58,36 +57,33 @@ const DIFFICULTY_MULTIPLIER: Record<string, number> = {
 
 export function calcEarnedXP(baseXP: number, difficulty: string, streak: number): number {
   const diff = DIFFICULTY_MULTIPLIER[difficulty] ?? 1.0;
-  const streakBonus = Math.min(1 + streak * 0.05, 2.0); // caps at 2×
+  const streakBonus = Math.min(1 + streak * 0.05, 2.0);
   return Math.round(baseXP * diff * streakBonus);
 }
 
-// ─── Derived selectors (pure functions, call outside of store) ─────────────────
+// ─── Derived selectors ─────────────────────────────────────────────────────────
 
 export function selectLevel(xp: number): number {
   return Math.floor(xp / 1000) + 1;
 }
 
 export function selectXPPercent(xp: number): number {
-  return Math.min((xp % 1000) / 10, 100); // 0–100
+  return Math.min((xp % 1000) / 10, 100);
 }
 
 export function selectXPToNextLevel(xp: number): number {
-  const level = selectLevel(xp);
-  return level * 1000;
+  return selectLevel(xp) * 1000;
 }
 
-// ─── Store State & Actions ─────────────────────────────────────────────────────
+// ─── Store ────────────────────────────────────────────────────────────────────
 
 interface GameStore {
-  // State
   profile: Profile | null;
   allTasks: Task[];
   userTasks: UserTask[];
   xpFloats: XPFloat[];
   _floatCounter: number;
 
-  // Actions – game domain only
   initProfile: (profile: Profile, allTasks: Task[], userTasks: UserTask[]) => void;
   acceptMission: (task: Task) => Promise<void>;
   skipMission: (task: Task) => Promise<void>;
@@ -95,8 +91,6 @@ interface GameStore {
   setLanguage: (lang: "en" | "ar" | "fr") => Promise<void>;
   removeXPFloat: (id: number) => void;
 }
-
-// ─── Store Implementation ───────────────────────────────────────────────────────
 
 export const useGameStore = create<GameStore>()(
   devtools(
@@ -116,13 +110,9 @@ export const useGameStore = create<GameStore>()(
           const { profile, userTasks, _floatCounter } = get();
           if (!profile) return;
 
-          // ── Optimistic update snapshot for rollback ──
           const snapshot = { profile: { ...profile }, userTasks: [...userTasks] };
-
-          // ── Calculate earned XP with formula ──
           const earned = calcEarnedXP(task.xp, task.difficulty ?? "easy", profile.streak);
 
-          // ── Tag-based stat routing ──
           const title = task.title.toLowerCase();
           const path  = (profile.path ?? "").toLowerCase();
           const stats: Stats = { ...(profile.stats ?? { academic: 0, fitness: 0, discipline: 0, social: 0 }) };
@@ -141,12 +131,11 @@ export const useGameStore = create<GameStore>()(
             stats.social     = (stats.social     ?? 0) + split;
           }
 
-          const newXP      = profile.xp + earned;
-          const newLevel   = selectLevel(newXP);
-          const newStreak  = userTasks.some(t => t.status === "completed") ? profile.streak : profile.streak + 1;
-          const floatId    = _floatCounter + 1;
+          const newXP     = profile.xp + earned;
+          const newLevel  = selectLevel(newXP);
+          const newStreak = userTasks.some(t => t.status === "completed") ? profile.streak : profile.streak + 1;
+          const floatId   = _floatCounter + 1;
 
-          // ── Apply optimistic state ──
           set({
             profile: { ...profile, xp: newXP, level: newLevel, streak: newStreak, stats },
             userTasks: [...userTasks, { task_id: task.id, status: "completed" }],
@@ -154,19 +143,14 @@ export const useGameStore = create<GameStore>()(
             _floatCounter: floatId,
           });
 
-          // Auto-remove float after 1.1s
           setTimeout(() => get().removeXPFloat(floatId), 1100);
 
-          // ── Background Supabase sync ──
           try {
             const supabase = createClient();
             await supabase.from("user_tasks").insert({ user_id: profile.id, task_id: task.id, status: "completed" });
-            await supabase.from("users").update({
-              xp: newXP, level: newLevel, streak: newStreak, stats,
-            }).eq("id", profile.id);
+            await supabase.from("users").update({ xp: newXP, level: newLevel, streak: newStreak, stats }).eq("id", profile.id);
           } catch (err) {
-            console.error("[gameStore] acceptMission rollback:", err);
-            // ── Rollback on failure ──
+            console.error("[gameStore] rollback:", err);
             set({ profile: snapshot.profile, userTasks: snapshot.userTasks });
           }
         },
@@ -174,10 +158,8 @@ export const useGameStore = create<GameStore>()(
         skipMission: async (task) => {
           const { profile, userTasks } = get();
           if (!profile) return;
-
           const snapshot = { userTasks: [...userTasks] };
           set({ userTasks: [...userTasks, { task_id: task.id, status: "skipped" }] });
-
           try {
             const supabase = createClient();
             await supabase.from("user_tasks").insert({ user_id: profile.id, task_id: task.id, status: "skipped" });
@@ -194,21 +176,15 @@ export const useGameStore = create<GameStore>()(
 
         setLanguage: async (lang) => {
           const { profile } = get();
-          // Optimistic local update
           if (profile) set({ profile: { ...profile, language: lang } });
-
-          // Persist to Supabase + localStorage
-          if (typeof window !== "undefined") {
-            localStorage.setItem("angez_lang", lang);
-          }
-
-          if (profile) {
-            try {
+          try {
+            if (typeof window !== "undefined") localStorage.setItem("angez_lang", lang);
+            if (profile) {
               const supabase = createClient();
               await supabase.from("users").update({ language: lang }).eq("id", profile.id);
-            } catch (e) {
-              console.warn("[gameStore] Language sync failed silently:", e);
             }
+          } catch (e) {
+            console.warn("[gameStore] Language sync failed:", e);
           }
         },
 
@@ -218,12 +194,20 @@ export const useGameStore = create<GameStore>()(
       }),
       {
         name: "angez-game-store",
+        // ✅ SSR-SAFE: skipHydration prevents localStorage access during SSR
+        // We manually call rehydrate() inside a useEffect in the client
+        skipHydration: true,
         storage: createJSONStorage(() => {
-          // Safe storage wrapper: falls back to memory if localStorage unavailable
-          if (typeof window === "undefined") return { getItem: () => null, setItem: () => {}, removeItem: () => {} };
-          return localStorage;
+          // Safe no-op on server, real localStorage on client
+          if (typeof window === "undefined") {
+            return {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {},
+            };
+          }
+          return window.localStorage;
         }),
-        // Only persist lightweight identity data — not full task lists (refetched server-side)
         partialize: (state) => ({
           profile: state.profile,
           userTasks: state.userTasks,
