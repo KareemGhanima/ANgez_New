@@ -1,12 +1,16 @@
+import { createClient } from "@/core/supabase/client";
+
 /**
- * Mock database layer simulating Supabase API calls with delays.
+ * Real database layer interacting with Supabase.
  */
+
+const supabase = createClient();
 
 export interface Mission {
   id: string;
   title: string;
   xp_reward: number;
-  type: "Academic" | "Fitness" | "Social" | "Other";
+  type: string;
 }
 
 const MOCK_MISSIONS: Mission[] = [
@@ -17,14 +21,61 @@ const MOCK_MISSIONS: Mission[] = [
 ];
 
 export async function fetchUserMissions(): Promise<Mission[]> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return MOCK_MISSIONS;
+  try {
+    const { data, error } = await supabase
+      .from("missions")
+      .select("*")
+      .limit(10);
+    
+    if (error || !data || data.length === 0) {
+      console.warn("Using mock missions. (Did you run the seed script?)", error);
+      return MOCK_MISSIONS;
+    }
+    
+    return data as Mission[];
+  } catch (err) {
+    console.error("Database fetch failed:", err);
+    return MOCK_MISSIONS;
+  }
 }
 
-export async function completeMission(missionId: string): Promise<number> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 600));
-  const mission = MOCK_MISSIONS.find((m) => m.id === missionId);
-  return mission ? mission.xp_reward : 0;
+/**
+ * Records mission completion and awards XP via RPC.
+ */
+export async function completeMission(missionId: string, userId: string): Promise<number> {
+  try {
+    // 1. Get mission details
+    const { data: mission, error: missionError } = await supabase
+      .from("missions")
+      .select("xp_reward")
+      .eq("id", missionId)
+      .single();
+    
+    if (missionError || !mission) throw new Error("Mission not found");
+
+    // 2. Award XP safely using the RPC we created
+    const { error: rpcError } = await supabase.rpc('award_xp', { 
+      user_id_param: userId, 
+      xp_addition: mission.xp_reward 
+    });
+
+    if (rpcError) throw rpcError;
+
+    // 3. Mark mission as completed in junction table
+    await supabase
+      .from("user_missions")
+      .upsert({ 
+        user_id: userId, 
+        mission_id: missionId, 
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      });
+
+    return mission.xp_reward;
+  } catch (err) {
+    console.error("Failed to complete mission in Supabase:", err);
+    // Fallback for demo/dev purposes
+    const mockMission = MOCK_MISSIONS.find(m => m.id === missionId);
+    return mockMission ? mockMission.xp_reward : 0;
+  }
 }

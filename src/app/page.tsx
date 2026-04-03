@@ -3,11 +3,23 @@
 import React from "react";
 import { useAngez } from "@/context/AngezContext";
 import GameCard from "@/components/ui/GameCard";
-import { Zap, Target, TrendingUp, Award } from "lucide-react";
+import { Zap, Target, TrendingUp, Award, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export default function IntegrationDashboard() {
-  const { user, addXP } = useAngez();
+  const { user, addXP, loading } = useAngez();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+          <div className="font-orbitron font-bold text-cyan-400 tracking-[0.3em] animate-pulse">SYNCING NEURAL LINK...</div>
+        </div>
+      </div>
+    );
+  }
 
   // Stats mapped for display
   const statList = [

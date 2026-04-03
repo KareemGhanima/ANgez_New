@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { createClient } from "@/core/supabase/client";
 
 // ─── Data Structures ─────────────────────────────────────────────────────────
 
@@ -13,6 +14,7 @@ export interface UserStats {
 }
 
 export interface UserData {
+  id: string;
   avatar: string;
   level: number;
   currentXP: number;
@@ -21,14 +23,17 @@ export interface UserData {
 
 interface AngezContextType {
   user: UserData;
-  addXP: (amount: number) => void;
-  updateAvatar: (avatarUrl: string) => void;
+  loading: boolean;
+  addXP: (amount: number) => Promise<void>;
+  updateAvatar: (avatarUrl: string) => Promise<void>;
   equipItem: (statBonuses: Partial<UserStats>) => void;
   isLevelingUp: boolean;
+  refreshUserData: () => Promise<void>;
 }
 
 const DEFAULT_USER: UserData = {
-  avatar: "/avatar_medical.png", // Starting default from previous phase
+  id: "",
+  avatar: "/avatar_medical.png",
   level: 1,
   currentXP: 0,
   totalStats: {
@@ -45,50 +50,88 @@ const AngezContext = createContext<AngezContextType | undefined>(undefined);
 
 export const AngezProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserData>(DEFAULT_USER);
+  const [loading, setLoading] = useState(true);
   const [isLevelingUp, setIsLevelingUp] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const supabase = createClient();
 
-  // Persistence (Prototype layer)
+  // 1. Sync with Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem("angez_user_state");
-    if (saved) {
-      setUser(JSON.parse(saved));
-    }
-    setHydrated(true);
+    refreshUserData();
   }, []);
 
-  useEffect(() => {
-    if (hydrated) {
-      localStorage.setItem("angez_user_state", JSON.stringify(user));
-    }
-  }, [user, hydrated]);
-
-  // XP & Leveling Logic
-  const addXP = (amount: number) => {
-    setUser((prev) => {
-      let newXP = prev.currentXP + amount;
-      let newLevel = prev.level;
-
-      // Check for level threshold (Fixed 1000 for prototype)
-      if (newXP >= 1000) {
-        newLevel += Math.floor(newXP / 1000);
-        newXP = newXP % 1000;
-        
-        // Trigger Level Up Ceremony
-        setIsLevelingUp(true);
-        setTimeout(() => setIsLevelingUp(false), 4000); // 4 second ceremony
+  const refreshUserData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
       }
 
-      return {
-        ...prev,
-        level: newLevel,
-        currentXP: newXP,
-      };
-    });
+      // Fetch Profile
+      const { data: profile, error: pError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      // Fetch Attributes
+      const { data: attrs, error: aError } = await supabase
+        .from("attributes")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (profile) {
+        setUser({
+          id: session.user.id,
+          avatar: profile.avatar_url || DEFAULT_USER.avatar,
+          level: profile.level || 1,
+          currentXP: profile.xp || 0,
+          totalStats: {
+            academic: attrs?.academic || 50,
+            discipline: attrs?.discipline || 50,
+            fitness: attrs?.fitness || 50,
+            social: attrs?.social || 50,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Supabase sync failed, using last known state:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateAvatar = (avatarUrl: string) => {
-    setUser((prev) => ({ ...prev, avatar: avatarUrl }));
+  // ── XP & Leveling Logic (Secure) ──────────────────────────────────────────
+  const addXP = async (amount: number) => {
+    if (!user.id) return;
+
+    // Optimistic Update
+    const prevXP = user.currentXP;
+    const newXP = prevXP + amount;
+    
+    // UI Level Up Trigger (Fixed 1000 threshold for demo)
+    if (newXP >= 1000) {
+      setIsLevelingUp(true);
+      setTimeout(() => setIsLevelingUp(false), 4000);
+    }
+
+    // Persist to Supabase via RPC
+    const { error } = await supabase.rpc('award_xp', { 
+      user_id_param: user.id, 
+      xp_addition: amount 
+    });
+
+    if (!error) {
+      // Sync back to get final state (level might have changed in DB)
+      await refreshUserData();
+    }
+  };
+
+  const updateAvatar = async (avatarUrl: string) => {
+    if (!user.id) return;
+    setUser(prev => ({ ...prev, avatar: avatarUrl }));
+    await supabase.from("users").update({ avatar_url: avatarUrl }).eq("id", user.id);
   };
 
   const equipItem = (statBonuses: Partial<UserStats>) => {
@@ -101,10 +144,11 @@ export const AngezProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         social: prev.totalStats.social + (statBonuses.social || 0),
       },
     }));
+    // Note: In a full implementation, we would also update public.inventory in Supabase
   };
 
   return (
-    <AngezContext.Provider value={{ user, addXP, updateAvatar, equipItem, isLevelingUp }}>
+    <AngezContext.Provider value={{ user, loading, addXP, updateAvatar, equipItem, isLevelingUp, refreshUserData }}>
       {children}
 
       {/* ── Level Up Overlay Ceremony ── */}
@@ -114,7 +158,7 @@ export const AngezProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.5 }}
-            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
           >
             <div className="absolute inset-0 bg-cyan-500/10 backdrop-blur-md" />
             <div className="relative text-center">

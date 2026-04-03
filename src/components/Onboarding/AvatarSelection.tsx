@@ -260,19 +260,44 @@ export default function AvatarSelection() {
         return;
       }
 
-      const { error: dbError } = await supabase
-        .from("users")
-        .update({ avatar_url: selected.avatar_url })
-        .eq("id", session.user.id);
+      const userId = session.user.id;
 
-      if (dbError) throw dbError;
+      // 1. Initialize/Update user profile
+      const { error: userError } = await supabase
+        .from("users")
+        .upsert({ 
+          id: userId,
+          avatar_url: selected.avatar_url,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || "Recruit",
+          level: 1,
+          xp: 0
+        });
+
+      if (userError) throw userError;
+
+      // 2. Map and initialize starting attributes
+      const statsMap = selected.stats.reduce((acc, s) => {
+        const key = s.label.toLowerCase() as keyof typeof acc;
+        acc[key] = s.value;
+        return acc;
+      }, { academic: 0, discipline: 0, fitness: 0, social: 0 });
+
+      const { error: attrError } = await supabase
+        .from("attributes")
+        .upsert({
+          user_id: userId,
+          ...statsMap
+        });
+
+      if (attrError) throw attrError;
 
       setSuccess(true);
-      // Navigate after a brief success flash
-      setTimeout(() => router.push("/onboarding"), 1200);
+      // Navigate after a brief success flash to dashboard
+      setTimeout(() => router.push("/"), 1500);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to save avatar.";
+      const msg = err instanceof Error ? err.message : "Failed to sync with neural link.";
       setError(msg);
+      console.error("Supabase sync error:", err);
     } finally {
       setLoading(false);
     }
